@@ -1,0 +1,165 @@
+/** Area **/
+a {
+	color:#3D3D3D;
+}
+
+.tabs_td{
+	background-color: #C0C0C0;
+	background-image: url(../../images/tabs_bg_redgray.gif);
+}
+/** User Navigation**/
+table.nav_table{
+	background-color: #FFF;
+	background-image: url(../../images/header_table_bg_redgray.gif);
+}
+
+.uHeaderName, uHeaderType{
+	color:#000000;
+}
+
+.right_cell_u{
+	border-bottom: 1px solid #8D8D8D;
+}
+
+/*Header*/
+.dt_hc_u, .dt_hcr_u{
+	background:#FAFAFA;
+}
+
+/*Cell*/
+.dt_c_u, .dt_cr_u, .dt_cb_u, .dt_cbr_u{
+	border-bottom:1px solid #FAFAFA;
+	border-right:1px solid #FAFAFA;
+}
+
+/** ----------------------------Data Table User -----END---------**/
+/* Text Header */
+.thback{
+	background-color: #C6C6C6;
+	background-image: url(../../images/mibcontainer_bg_redgray.gif);
+	color: #E41A0A;
+/*	background-color:#DBE7EF;*/
+}
+
+/* Header Link */
+a.hl{
+	/*color: #3C89DA;*/
+}
+
+/*maximize minimize buttons*/
+.fsblock_up, .fsblock_down {
+	color: #E41A0A;
+	background: url('../../images/up_arr.gif') 3px 50% no-repeat;
+}
+.fsblock_down{
+	background: url('../../images/down_arr.gif') 3px 50% no-repeat;
+}
+
+.fsmax,.fsmin {
+	background: url('../../images/fs_maximize_redgray.gif') left no-repeat;
+}
+.fsmin {
+	background: url('../../images/fs_minimize_redgray.gif') left no-repeat;
+}
+
+.infobutton{
+	background: url('../../images/infobutton_redgray.gif') left no-repeat;
+}
+
+.mibcontainer {/*containter for maininfo button*/
+	border-top: 5px solid #EAEAEA;
+	background-color: #C6C6C6;
+	background-image: url(../../images/mibcontainer_bg_redgray.gif);
+}
+
+/*Registration*/
+.reg_main_header{
+	background-color: #FFF;
+	background-image: url(../../images/header_table_bg_redgray.gif);
+	font: bold 16px Verdana;	
+	color: #000;
+}
+
+/*user*/
+.fst_header_u{
+	background:#FAFAFA;
+}
+
+.fst_c_main_u, .fst_c_u, .fst_c_child_u{
+	border-bottom: 1px solid #FAFAFA;
+}
+
+td.fp_pic_u{
+	border-top: 1px solid #FAFAFA;
+}
+
+td.fp_message_u{
+	border-top: 1px solid #FAFAFA;
+	color: #000;
+	padding: 10px 16px 10px 16px;
+}
+
+/*SCHEME*/
+td.scheme_header{
+	background-color: #C6C6C6;
+	background-image: url(../../images/mibcontainer_bg_redgray.gif);
+}
+
+td.scheme_duration{
+	background: #FAFAFA;
+}
+td.scheme_plans{
+	background: #FAFAFA;
+}
+
+td.mp_main{
+	/*padding-left: 10px;*/
+}
+
+div.mp_header{
+	background-color: #C6C6C6;
+}
+div.mp_header_u{
+	background-color: #C6C6C6;
+	background-image: url(../../images/mibcontainer_bg_redgray.gif);
+	color: #E41A0A;
+}
+div.mp_header_w{
+	background-color: #C6C6C6;
+	background-image: url(../../images/mibcontainer_bg_redgray_gray.gif);
+}
+
+div.mp_newsbody_u{
+	color: #949494;
+}
+
+div.mp_announcedate_u{
+	background: #F8F6F3;
+	border-bottom: 1px solid #EEE7E3;
+}
+
+div.mp_announcebody_u{
+	border-bottom: 1px solid #C0A797;
+}
+
+div.mp_announcename_u{
+	color: #949494;
+}
+
+div.mp_faqbody_u{
+	color: #949494;
+}
+
+/*NEWS*/
+div.news_block{
+	border-bottom: 1px solid #6A1B0E;
+}
+
+div.list_header_u{
+	background-color: #FBFBFB;
+}
+
+
+div.support_main_header{
+	background-image: url(../../images/header_table_bg_redgray.gif);
+}

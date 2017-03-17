@@ -1,0 +1,13 @@
+<Context>
+	<!-- local test db -->
+	<Resource auth="Container"
+			  driverClassName="org.postgresql.Driver"
+			  maxActive="100"
+			  maxIdle="30"
+			  maxWait="10000"
+			  name="secureDiary"
+			  validationQuery="select 1" testWhileIdle="true" testOnBorrow="true"
+			  username="postgres"
+			  password="12Qwerty"
+			  type="javax.sql.DataSource" url="jdbc:postgresql://localhost:5432/secure_diary"/>
+</Context>

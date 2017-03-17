@@ -1,0 +1,52 @@
+.nav-caption {
+    color: #D7D7D7;
+	padding-left: 10px;
+	padding-right: 10px;
+	display: block;
+    padding-bottom: 14px;
+    padding-top: 13px;
+    text-decoration: none;
+}
+.entitycaption {
+	font-family: Arial,Verdana,Sans-Serif;
+    font-size: 14px;
+}
+
+.entitycaption_v_aligned {
+	font-family: Arial,Verdana,Sans-Serif;
+    font-size: 14px;
+	vertical-align: top;
+}
+
+.entityrows_gap {
+	padding-bottom:5px;
+}
+
+input, textarea {
+    border: 1px solid #ABADB3;
+    font-family: Arial,Verdana,Sans-Serif;
+    font-size: 13px;
+}
+
+.collapsetable {
+    padding-left: 7px;
+    padding-right: 7px;
+    padding-top: 10px;
+    width: 100%;
+}
+
+table.entitytable {
+    width: 100%;
+}
+
+div.entityheadercaption {
+    background: none repeat scroll 0 0 #E9E9E9;
+    display: inline;
+    font-weight: bold;
+	font-family: Arial,Verdana,Sans-Serif;
+    font-size: 13px;
+}
+
+td.entityheader {
+    background: url("../../img/fieldset_bg.gif") repeat-x scroll 0 50% rgba(0, 0, 0, 0);
+}

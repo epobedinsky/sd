@@ -1,13 +1,14 @@
 <Context>
-	<!-- local test db -->
 	<Resource auth="Container"
-			  driverClassName="org.postgresql.Driver"
+			  driverClassName="com.mysql.jdbc.Driver"
+			  logAbandoned="true"
 			  maxActive="100"
 			  maxIdle="30"
 			  maxWait="10000"
 			  name="secureDiary"
-			  validationQuery="select 1" testWhileIdle="true" testOnBorrow="true"
-			  username="postgres"
+			  validationQuery="SELECT 1" removeAbandonedTimeout="60" testOnBorrow="true"
+			  removeAbandoned="true"
+			  username="root"
 			  password="12Qwerty"
-			  type="javax.sql.DataSource" url="jdbc:postgresql://localhost:5432/secure_diary"/>
+			  type="javax.sql.DataSource" url="jdbc:mysql://localhost:3306/secure_diary"/>
 </Context>

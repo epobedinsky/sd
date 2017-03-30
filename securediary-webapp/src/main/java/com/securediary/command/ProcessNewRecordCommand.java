@@ -15,6 +15,7 @@ import org.ogai.view.NullView;
 import org.ogai.view.View;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +80,8 @@ public class ProcessNewRecordCommand extends GoMainPageCommand {
 	}
 
 	private List<String> readFile() throws IOException {
-		InputStream is = Ctx.get().getSession().getServletContext().getResourceAsStream(SRC_FILE_PATH);
+		File file = new File(SRC_FILE_PATH);
+		InputStream is = Files.newInputStream(file.toPath());
 		InputStreamReader psr = new InputStreamReader(is);
 		BufferedReader br = new BufferedReader(psr);
 

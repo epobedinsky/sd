@@ -89,7 +89,9 @@ public class ViewRecordsCommand implements Executable {
 		sb.append("<br>");
 		//TODO пока работаем только с одной страницей в каждой записи
 		//sb.append("<textarea width=\"100%\" height=\"100%\" readonly>");
-		sb.append(scrambler.descramble((String)record.get(RecordEntity.getPageCol(RecordEntity.COL_PAGE_CONENT))));
+		String descrambledText = scrambler.descramble((String)record.get(RecordEntity.getPageCol(RecordEntity.COL_PAGE_CONENT)));
+		descrambledText = descrambledText.replaceAll("<FP>", "<br>");
+		sb.append(descrambledText);
 		//sb.append("</textarea>");
 		sb.append("<br>");
 

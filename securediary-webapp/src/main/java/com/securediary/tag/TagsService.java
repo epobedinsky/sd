@@ -5,6 +5,7 @@ import com.securediary.scramble.ScramblerFactory;
 import org.ogai.core.ObjectsRegistry;
 import org.ogai.db.DBSession;
 import org.ogai.db.QueryResult;
+import org.ogai.db.SQLQuery;
 import org.ogai.exception.OgaiException;
 
 import java.util.*;
@@ -24,7 +25,7 @@ public class TagsService {
 	 * Получить по всем тегам полную информацию
 	 */
 	public List<FullTag> getAllTags() throws OgaiException {
-		QueryResult qr = DBSession.selectQuery(TagsQueries.all_tags.getQuery().getQuery());
+		QueryResult qr = DBSession.selectQuery(TagsQueries.all_tags.getQuery());
 		List<FullTag> fullTagsList = new ArrayList<FullTag>();
 		for (QueryResult.Record record : qr) {
 			Scrambler scrambler = ScramblerFactory.get((String)record.get(TagTable.SCRAMBLER));
@@ -43,7 +44,7 @@ public class TagsService {
 	public List<FullTag> getRecordTags(Long recordId) throws OgaiException {
 		String queryText = TagsQueries.record_tags.getQuery().getQuery();
 		queryText =String.format(queryText, recordId);
-		final QueryResult qr = DBSession.selectQuery(queryText);
+		final QueryResult qr = DBSession.selectQuery(new SQLQuery(queryText));
 
 		return new ArrayList<FullTag>() {{
 			for (QueryResult.Record record : qr) {

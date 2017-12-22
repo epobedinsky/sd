@@ -40,8 +40,8 @@ public class LogFactory {
 	 * @throws Exception
 	 */
 	public static LogService createFileLogService() throws Exception {
-		//File logsDir = new File(new Win7FileSystem(), "D:/Aquatour/Logs");
-		File logsDir = new File(new Win7FileSystem(), "/usr/aqautor/logs");
+		File logsDir = new File(new Win7FileSystem(), "../logs/applogs/");
+		//File logsDir = new File(new Win7FileSystem(), "/usr/aqautor/logs");
 		return new SimpleLogService(new SimpleLogFormatter(),
 				new FileWriter("out.log", logsDir, 2000000, 100, "UTF-8"),
 				new FileWriter("err.log", logsDir, 2000000, 100, "UTF-8"));

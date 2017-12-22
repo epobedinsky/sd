@@ -2,6 +2,9 @@ package org.ogai.core;
 
 import org.ogai.command.sys.*;
 import org.ogai.db.StoredDBQueryService;
+import org.ogai.db.types.DatabaseService;
+import org.ogai.db.types.MySQLDatabaseService;
+import org.ogai.db.types.PostgresDatabaseService;
 import org.ogai.grid.GridCommand;
 import org.ogai.log.Log;
 import org.ogai.log.LogFactory;
@@ -53,6 +56,8 @@ public class Application {
 			//и прежде всего лог и сервис логгирования
 			registry.register(LogService.NAME, Log.initLogService(LogFactory.createSystemLogService()));
 			//registry.register(LogService.NAME, Log.initLogService(LogFactory.createFileLogService()));
+			//registry.register(DatabaseService.NAME, new PostgresDatabaseService());
+			registry.register(DatabaseService.NAME, new MySQLDatabaseService());
 			log.info("Application init started");
 
 			registry.register(TextService.NAME, new TextService());

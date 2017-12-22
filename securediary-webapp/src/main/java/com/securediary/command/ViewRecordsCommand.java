@@ -13,6 +13,8 @@ import org.ogai.core.ObjectsRegistry;
 import org.ogai.core.ServicesRegistry;
 import org.ogai.db.DBSession;
 import org.ogai.db.QueryResult;
+import org.ogai.db.SQLQuery;
+import org.ogai.db.types.DatabaseService;
 import org.ogai.exception.OgaiException;
 import org.ogai.model.GoCommandCall;
 import org.ogai.model.SubmitCommandCall;
@@ -66,8 +68,10 @@ public class ViewRecordsCommand implements Executable {
 
 	private QueryResult loadRecords(String idsListParam) throws OgaiException {
 		String sql = RecordsQueries.view_records.getQuery().getQuery();
-		sql = String.format(sql, idsListParam);
-		return DBSession.selectQuery(sql);
+		DatabaseService dbService = (DatabaseService)ServicesRegistry.getInstance().get(DatabaseService.NAME);
+		SQLQuery sqlQuery = dbService.getQuery();
+		sqlQuery.setQuery(String.format(sql, idsListParam));
+		return DBSession.selectQuery(sqlQuery);
 	}
 
 	private String render(QueryResult.Record record) throws OgaiException, ParseException {

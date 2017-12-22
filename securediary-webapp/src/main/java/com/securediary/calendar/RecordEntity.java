@@ -3,12 +3,11 @@ package com.securediary.calendar;
 import com.securediary.scramble.Scrambler;
 import com.securediary.scramble.ScramblerFactory;
 import org.ogai.command.sys.GoCommand;
-import org.ogai.core.Application;
 import org.ogai.core.Ctx;
 import org.ogai.db.DBSession;
 import org.ogai.db.QueryResult;
+import org.ogai.db.SQLQuery;
 import org.ogai.exception.OgaiException;
-import org.ogai.model.EntityException;
 import org.ogai.model.entity.Entity;
 import org.ogai.model.entity.EntityField;
 import org.ogai.model.entity.builders.ViewDateConvertor;
@@ -16,7 +15,6 @@ import org.ogai.model.entity.builders.ViewEntityConvertor;
 import org.ogai.model.table.Table;
 import org.ogai.util.Util;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +32,7 @@ public class RecordEntity extends Entity {
 	public static final String RECORD_SEQUENCE_NAME = "record_id";
 	public static final String RECORD_PAGE_SEQUENCE_NAME = "recordpage_id";
 
-	public static final String COL_CREATE_DATE = "create_date";
+	public static final String COL_CREATE_DATE = SQLQuery.COL_CREATE_DATE;
 	public static final String COL_CREATOR_ID = "creator_id";
 	public static final String COL_DIARY_ID = "diary_id";
 	public static final String COL_SCRAMBLER = "scrambler";
@@ -75,7 +73,8 @@ public class RecordEntity extends Entity {
 			record.put(COL_PAGE_ORDERNUM, new Long(1));
 
 			//TODO пока считаем, что все записи заносятся в дефолтный diary с id=0
-			record.put(COL_DIARY_ID, 0);
+			//TODO перенести в параметр базы ???
+			record.put(COL_DIARY_ID, 1);
 			record.put(COL_CREATOR_ID, Ctx.get().getUser().getId());
 		} else {
 			ViewDateConvertor viewDateConvertor = new ViewDateConvertor();
@@ -139,19 +138,6 @@ public class RecordEntity extends Entity {
 				//Пока ничего не делаем
 			}
 
-			@Override
-			protected String getSQLParam(String column, Object value) {
-				//TODO #21
-				if (column.equals(COL_CREATE_DATE)) {
-					if (value == null) {
-						return "null";
-					}
-					return "'" + Util.formatDate((Date)value,Util.DB_DATETIME_FORMAT_PATTERN ) + "'";
-				} else {
-					return super.getSQLParam(column, value);
-				}
-			}
-
 			/**
 			 * Вставить новую запись в таблицу
 			 * @param record не null
@@ -170,9 +156,10 @@ public class RecordEntity extends Entity {
 				//Добавляем запись и все ее страницы в одной транзакции
 				try {
 					dbSession.open();
-					Long recordId = dbSession.executeInsertQueryInTrx(this.sequenceName, String.format(INSERT_SQL, tableName, //INSERT INTO tableName
+					Long recordId = dbSession.executeInsertQueryInTrx(this,
+							super.dbService.getQuery().insertQuery(this, recRecord)); /*String.format(INSERT_SQL, tableName, //INSERT INTO tableName
 							createColumnsList(recRecord), // (id, a1, b1...n)
-							createValuesListForInsert(recRecord, idColumnName))); //VALUES(%s, a, b,...n) //exception
+							createValuesListForInsert(recRecord, idColumnName)))*/; //VALUES(%s, a, b,...n) //exception
 
 					insertPage(dbSession, recordId, getPage(record));
 
@@ -190,9 +177,17 @@ public class RecordEntity extends Entity {
 				page.put(COL_PAGE_REC_ID, recordId);
 				page.put(idColumnName, "");
 
-				dbSession.executeInsertQueryInTrx(RECORD_PAGE_SEQUENCE_NAME, String.format(INSERT_SQL, PAGE_TABLE_NAME, //INSERT INTO tableName
+				//TODO remove this hack
+				Table recordPageTable = new Table(RECORD_PAGE_TABLE_NAME, RECORD_PAGE_SEQUENCE_NAME) {
+					@Override
+					protected void define() {
+
+					}
+				};
+				dbSession.executeInsertQueryInTrx(recordPageTable,
+						super.dbService.getQuery().insertQuery(recordPageTable, page));/*String.format(INSERT_SQL, PAGE_TABLE_NAME, //INSERT INTO tableName
 						createColumnsList(page), // (id, a1, b1...n)
-						createValuesListForInsert(page, idColumnName))); //VALUES(%s, a, b,...n) //exception
+						createValuesListForInsert(page, idColumnName)));*/ //VALUES(%s, a, b,...n) //exception
 			}
 
 			private QueryResult.Record getRecord(QueryResult.Record src) {

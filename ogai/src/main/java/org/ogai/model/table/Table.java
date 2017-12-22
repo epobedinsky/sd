@@ -1,13 +1,12 @@
 package org.ogai.model.table;
 
 import org.ogai.core.ObjectsRegistry;
+import org.ogai.core.ServicesRegistry;
 import org.ogai.db.DBSession;
 import org.ogai.db.QueryResult;
+import org.ogai.db.types.DatabaseService;
 import org.ogai.exception.OgaiException;
 import org.ogai.util.Util;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Обертка над таблицей базы данных Конструирует SQL запросы для работы с некоторой сущности.
@@ -25,16 +24,16 @@ import java.util.Set;
 public abstract class Table {
 	protected static final String ID_COLUMN_NAME = "id";
 
-	protected static final String SELECT_SQL = "SELECT * FROM %s";
-	protected static final String INSERT_SQL = "INSERT INTO %s (%s) VALUES(%s)";
-	protected static final String UPDATE_SQL = "UPDATE %s SET %s";
-	protected static final String DELETE_SQL = "DELETE FROM %s";
-	protected static final String WHERE_CLAUSE = " WHERE";
-	protected static final String EQUALS = " %s = %s";
-
-	protected static final String AND = " AND";
-	protected static final String COMMA = " ,";
-
+//	protected static final String SELECT_SQL = "SELECT * FROM %s";
+//	protected static final String INSERT_SQL = "INSERT INTO %s (%s) VALUES(%s)";
+//	protected static final String UPDATE_SQL = "UPDATE %s SET %s";
+//	protected static final String DELETE_SQL = "DELETE FROM %s";
+//	protected static final String WHERE_CLAUSE = " WHERE";
+//	protected static final String EQUALS = " %s = %s";
+//
+//	protected static final String AND = " AND";
+//	protected static final String COMMA = " ,";
+//
 	protected final String tableName;
 
 
@@ -44,6 +43,7 @@ public abstract class Table {
 	protected String idColumnName;
 	//Имя сиквенса для id
 	protected String sequenceName;
+	protected DatabaseService dbService;
 
 	/**
 	 *
@@ -58,6 +58,7 @@ public abstract class Table {
 
 		//имя по умолчанию
 		idColumnName = ID_COLUMN_NAME;
+		dbService = (DatabaseService)ServicesRegistry.getInstance().get(DatabaseService.NAME);
 	}
 
 	public String getIdColumnName() {
@@ -98,7 +99,8 @@ public abstract class Table {
 		assert Util.isNotEmpty(id);
 		assert isDefined;
 
-		return DBSession.selectQuery(String.format(SELECT_SQL + WHERE_CLAUSE + EQUALS, tableName, idColumnName, id.toString())); //exception
+
+		return DBSession.selectQuery(dbService.getQuery().loadQuery(id, this)); //exception
 	}
 
 	/**
@@ -110,8 +112,7 @@ public abstract class Table {
 	public QueryResult list(QueryResult.Record filter) throws OgaiException {
 		assert filter != null;
 
-		return DBSession.selectQuery(String.format(SELECT_SQL + (filter.isEmpty() ? "" : WHERE_CLAUSE), tableName)
-				+ (filter.isEmpty() ? "" : createCondition(filter))); //exception
+		return DBSession.selectQuery(dbService.getQuery().listQuery(this, filter)); //exception
 	}
 
 	/**
@@ -125,10 +126,7 @@ public abstract class Table {
 		assert record != null;
 		assert id != null;
 
-		DBSession.executeQuery(String.format(UPDATE_SQL, tableName, //UPDATE
-				createEqOperatorsList(COMMA, record, idColumnName) //список операторов присваивания a1 = a, b1 = b...
-				//WHERE id = idValue
-				+  WHERE_CLAUSE + createOperatorStatement(EQUALS, idColumnName, id))); //exception
+		DBSession.executeQuery(dbService.getQuery().updateQuery(id, this, record)); //exception
 	}
 
 	/**
@@ -141,9 +139,7 @@ public abstract class Table {
 		assert record != null;
 		assert Util.isNotEmpty(this.sequenceName);
 
-		return DBSession.executeInsertQuery(this.sequenceName, String.format(INSERT_SQL, tableName, //INSERT INTO tableName
-				createColumnsList(record), // (id, a1, b1...n)
-				createValuesListForInsert(record, idColumnName))); //VALUES(%s, a, b,...n) //exception
+		return DBSession.executeInsertQuery(this, dbService.getQuery().insertQuery(this, record)); //VALUES(%s, a, b,...n) //exception
 	}
 
 	/**
@@ -156,9 +152,7 @@ public abstract class Table {
 		assert record != null;
 		assert Util.isNotEmpty(this.sequenceName);
 
-		return dbSession.executeInsertQueryInTrx(this.sequenceName, String.format(INSERT_SQL, tableName, //INSERT INTO tableName
-				createColumnsList(record), // (id, a1, b1...n)
-				createValuesListForInsert(record, idColumnName))); //VALUES(%s, a, b,...n) //exception
+		return dbSession.executeInsertQueryInTrx(this, dbService.getQuery().insertQuery(this, record)); //VALUES(%s, a, b,...n) //exception
 	}
 
 	/**
@@ -170,7 +164,7 @@ public abstract class Table {
 		assert id != null;
 		assert isDefined;
 
-		DBSession.executeQuery(String.format(DELETE_SQL + WHERE_CLAUSE + EQUALS, tableName, idColumnName, id.toString())); //exception
+		DBSession.executeQuery(dbService.getQuery().deleteQuery(id, this)); //exception
 	}
 
 	///////////////////////////
@@ -180,20 +174,20 @@ public abstract class Table {
 	 */
 	protected abstract void define();
 
-	/**
-	 *
-	 * @return Параметр оформленный для использования в запросе
-	 */
-	protected String getSQLParam(String column, Object value) {
-		//TODO найти соответствующий преобразователь если есть и пореобразовать
-		//если нет
-		if (value == null) {
-			return "''";
-		}
-
-		//никакого специфичного преобразования не найдено - считаем что это строковый параметр
-		return "'" + String.valueOf(value) + "'";
-	}
+//	/**
+//	 *
+//	 * @return Параметр оформленный для использования в запросе
+//	 */
+//	protected String getSQLParam(String column, Object value) {
+//		//TODO найти соответствующий преобразователь если есть и пореобразовать
+//		//если нет
+//		if (value == null) {
+//			return "''";
+//		}
+//
+//		//никакого специфичного преобразования не найдено - считаем что это строковый параметр
+//		return "'" + String.valueOf(value) + "'";
+//	}
 
 	private void callDefine() {
 		//таблица должна настраиваться строго один раз за время своей жизни
@@ -203,90 +197,90 @@ public abstract class Table {
 		isDefined = true;
 	}
 
-	private String createCondition(QueryResult.Record filter) {
-		return createEqOperatorsList(AND, filter);
-	}
+//	private String createCondition(QueryResult.Record filter) {
+//		return createEqOperatorsList(AND, filter);
+//	}
+//
+//	private String createEqOperatorsList(String delimiter, QueryResult.Record filter, String... excludeColumns) {
+//		assert Util.isNotEmpty(delimiter);
+//
+//		Set<String> excludeColumnsSet = Util.toSet(excludeColumns);
+//
+//		StringBuilder sb = new StringBuilder();
+//		boolean isFirstParam = true;
+//		for (String column : filter.keySet()) {
+//			if (!excludeColumnsSet.contains(column)) {
+//				String paramConditionFormat = EQUALS;
+//				if (!isFirstParam) {
+//					paramConditionFormat = delimiter + paramConditionFormat;
+//				} else {
+//					isFirstParam = false;
+//				}
+//				sb.append(createOperatorStatement(paramConditionFormat, column, filter.get(column)));
+//			}
+//		}
+//
+//		return sb.toString();
+//	}
+//
+//	private String createOperatorStatement(String operatorFormat, String column, Object value) {
+//		assert Util.isNotEmpty(operatorFormat);
+//		assert Util.isNotEmpty(column);
+//
+//		return String.format(operatorFormat, column, getSQLParam(column, value));
+//	}
 
-	private String createEqOperatorsList(String delimiter, QueryResult.Record filter, String... excludeColumns) {
-		assert Util.isNotEmpty(delimiter);
-
-		Set<String> excludeColumnsSet = Util.toSet(excludeColumns);
-
-		StringBuilder sb = new StringBuilder();
-		boolean isFirstParam = true;
-		for (String column : filter.keySet()) {
-			if (!excludeColumnsSet.contains(column)) {
-				String paramConditionFormat = EQUALS;
-				if (!isFirstParam) {
-					paramConditionFormat = delimiter + paramConditionFormat;
-				} else {
-					isFirstParam = false;
-				}
-				sb.append(createOperatorStatement(paramConditionFormat, column, filter.get(column)));
-			}
-		}
-
-		return sb.toString();
-	}
-
-	private String createOperatorStatement(String operatorFormat, String column, Object value) {
-		assert Util.isNotEmpty(operatorFormat);
-		assert Util.isNotEmpty(column);
-
-		return String.format(operatorFormat, column, getSQLParam(column, value));
-	}
-
-	protected String createColumnsList(QueryResult.Record record) {
-		StringBuilder sb = new StringBuilder();
-		boolean isFirstParam = true;
-		for (String column : record.keySet()) {
-			String value = column;
-			if (!isFirstParam) {
-				value = COMMA + value;
-			} else {
-				isFirstParam = false;
-			}
-			sb.append(value);
-		}
-
-		return sb.toString();
-	}
-
-	private String createValuesList(QueryResult.Record record, String... excludeColumns) {
-		Set<String> excludeColumnsSet = Util.toSet(excludeColumns);
-
-		StringBuilder sb = new StringBuilder();
-		boolean isFirstParam = true;
-		for (String column : record.keySet()) {
-			if (!excludeColumnsSet.contains(column)) {
-				String paramConditionFormat = getSQLParam(column, record.get(column));
-				if (!isFirstParam) {
-					paramConditionFormat = COMMA + paramConditionFormat;
-				} else {
-					isFirstParam = false;
-				}
-				sb.append(paramConditionFormat);
-			}
-		}
-
-		return sb.toString();
-	}
-
-	protected String createValuesListForInsert(QueryResult.Record record, String idColumnName) {
-		StringBuilder sb = new StringBuilder();
-		boolean isFirstParam = true;
-		for (String column : record.keySet()) {
-			String paramConditionFormat = !column.equals(idColumnName) ? getSQLParam(column, record.get(column))
-					: " %s";
-
-			if (!isFirstParam) {
-				paramConditionFormat = COMMA + paramConditionFormat;
-			} else {
-				isFirstParam = false;
-			}
-			sb.append(paramConditionFormat);
-		}
-
-		return sb.toString();
-	}
+//	protected String createColumnsList(QueryResult.Record record) {
+//		StringBuilder sb = new StringBuilder();
+//		boolean isFirstParam = true;
+//		for (String column : record.keySet()) {
+//			String value = column;
+//			if (!isFirstParam) {
+//				value = COMMA + value;
+//			} else {
+//				isFirstParam = false;
+//			}
+//			sb.append(value);
+//		}
+//
+//		return sb.toString();
+//	}
+//
+//	private String createValuesList(QueryResult.Record record, String... excludeColumns) {
+//		Set<String> excludeColumnsSet = Util.toSet(excludeColumns);
+//
+//		StringBuilder sb = new StringBuilder();
+//		boolean isFirstParam = true;
+//		for (String column : record.keySet()) {
+//			if (!excludeColumnsSet.contains(column)) {
+//				String paramConditionFormat = getSQLParam(column, record.get(column));
+//				if (!isFirstParam) {
+//					paramConditionFormat = COMMA + paramConditionFormat;
+//				} else {
+//					isFirstParam = false;
+//				}
+//				sb.append(paramConditionFormat);
+//			}
+//		}
+//
+//		return sb.toString();
+//	}
+//
+//	protected String createValuesListForInsert(QueryResult.Record record, String idColumnName) {
+//		StringBuilder sb = new StringBuilder();
+//		boolean isFirstParam = true;
+//		for (String column : record.keySet()) {
+//			String paramConditionFormat = !column.equals(idColumnName) ? getSQLParam(column, record.get(column))
+//					: " %s";
+//
+//			if (!isFirstParam) {
+//				paramConditionFormat = COMMA + paramConditionFormat;
+//			} else {
+//				isFirstParam = false;
+//			}
+//			sb.append(paramConditionFormat);
+//		}
+//
+//		return sb.toString();
+//	}
 }

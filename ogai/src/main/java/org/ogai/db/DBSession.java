@@ -2,9 +2,12 @@ package org.ogai.db;
 
 import org.ogai.core.Application;
 import org.ogai.core.Ctx;
+import org.ogai.core.ServicesRegistry;
+import org.ogai.db.types.DatabaseService;
 import org.ogai.exception.OgaiException;
 import org.ogai.log.Log;
 import org.ogai.log.LogFactory;
+import org.ogai.model.table.Table;
 import org.ogai.util.Util;
 import org.ogai.db.QueryResult.Record;
 
@@ -137,13 +140,13 @@ public class DBSession {
 
 	/**
 	 *
-	 * @param sql
+	 * @param query
 	 * @return результаты select - запроса содержащие набор строк, выполненного без объекта сессии
 	 * @throws OgaiException
 	 */
-	public static QueryResult selectQuery(String sql) throws OgaiException {
+	public static QueryResult selectQuery(SQLQuery query) throws OgaiException {
 		DBSession session = DBSession.get();
-		return session.select(sql);
+		return session.select(query.getQuery());
 	}
 
 	/**
@@ -159,13 +162,13 @@ public class DBSession {
 
 	/**
 	 *
-	 * @param sql Запрос связанный с выполнением изменений в таблице
+	 * @param query Запрос связанный с выполнением изменений в таблице
 	 * @return
 	 * @throws OgaiException
 	 */
-	public static boolean executeQuery(String sql) throws OgaiException {
+	public static boolean executeQuery(SQLQuery query) throws OgaiException {
 		DBSession session = DBSession.get();
-		return session.execute(sql);
+		return session.execute(query.getQuery());
 	}
 
 	public Object getValue(String sql) throws OgaiException {
@@ -182,16 +185,16 @@ public class DBSession {
 		return result.get(0).values().toArray(new Object[0])[0];
 	}
 
-	/**
-	 *
-	 * @param sequence
-	 * @return Текущее значение последовательности. Может быть вызвано только в сесии
-	 * (более того в транзакции, где был вызван nextval)
-	 * @throws OgaiException
-	 */
-	public Object getSequenceCurrentValue(String sequence) throws OgaiException {
-		return getValue("SELECT currval('" + sequence + "')");
-	}
+//	/**
+//	 *
+//	 * @param sequence
+//	 * @return Текущее значение последовательности. Может быть вызвано только в сесии
+//	 * (более того в транзакции, где был вызван nextval)
+//	 * @throws OgaiException
+//	 */
+//	public Object getSequenceCurrentValue(String sequence) throws OgaiException {
+//		return getValue("SELECT currval('" + sequence + "')");
+//	}
 
 	/**
 	 * TODO переписать чтоб на вход подавался обьектный набор параметров
@@ -241,14 +244,14 @@ public class DBSession {
 
 	/**
 	 * Выполняет вставку в таблицу где id генерируется с помощью sequence
-	 * @param sequenceName не пустое имя sequence
-	 * @param sql Строка sql из которой будет получен финальный скрипт вставки. В нее будут подставлено
+	 * @param table не Null
+	 * @param query Строка sql из которой будет получен финальный скрипт вставки. В нее будут подставлено
 	 *               вычисление его значения из sequence
 	 * @return id добавленной записи
 	 */
-	public static Long executeInsertQuery(String sequenceName, String sql) throws OgaiException {
-		assert Util.isNotEmpty(sequenceName);
-		assert Util.isNotEmpty(sql);
+	public static Long executeInsertQuery(Table table, SQLQuery query) throws OgaiException {
+		assert table != null;
+		assert query != null;
 
 		DBSession dbSession = DBSession.get();
 
@@ -257,10 +260,11 @@ public class DBSession {
 			dbSession.open();
 
 			//Готовим insert sql
-			sql = String.format(sql, getSequenceNextValue(sequenceName));
+			DatabaseService dbService = (DatabaseService) ServicesRegistry.getInstance().get(DatabaseService.NAME);
+			String sql = insertIdGeneration(query, dbService.getIdGenerator().getGenerationIdSentence(table));
 			//Вставляем
 			dbSession.execute(sql);
-			return (Long)dbSession.getSequenceCurrentValue(sequenceName);
+			return (Long)dbService.getIdGenerator().getCurrentId(table, dbSession);
 
 		} catch(Exception e) {
 			dbSession.markForRollback();
@@ -270,22 +274,30 @@ public class DBSession {
 		}
 	}
 
-	public Long executeInsertQueryInTrx(String sequenceName, String sql) throws OgaiException {
-		assert Util.isNotEmpty(sequenceName);
-		assert Util.isNotEmpty(sql);
+	private static String insertIdGeneration(SQLQuery query, String idGeneration) {
+		if (Util.isEmpty(idGeneration)) {
+			return query.getQuery();
+		}
+		return String.format(query.getQuery(), idGeneration);
+	}
+
+	public Long executeInsertQueryInTrx(Table table, SQLQuery query) throws OgaiException {
+		assert table != null;
+		assert query != null;
 
 		//Готовим insert sql
-		sql = String.format(sql, getSequenceNextValue(sequenceName));
+		DatabaseService dbService = (DatabaseService) ServicesRegistry.getInstance().get(DatabaseService.NAME);
+		String sql = insertIdGeneration(query, dbService.getIdGenerator().getGenerationIdSentence(table));
 		//Вставляем
 		this.execute(sql);
-		return (Long)getSequenceCurrentValue(sequenceName);
+		return (Long)dbService.getIdGenerator().getCurrentId(table, this);
 	}
 
-	private static Object getSequenceNextValue(String sequenceName) {
-		assert Util.isNotEmpty(sequenceName);
-
-		return "nextval('" + sequenceName + "')";
-	}
+//	private static Object getSequenceNextValue(String sequenceName) {
+//		assert Util.isNotEmpty(sequenceName);
+//
+//		return "nextval('" + sequenceName + "')";
+//	}
 
 
 	@Override

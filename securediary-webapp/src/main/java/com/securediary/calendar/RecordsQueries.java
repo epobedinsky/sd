@@ -13,8 +13,9 @@ import org.ogai.db.StoredDBQueryService;
  */
 public enum RecordsQueries implements StoredDBQuery {
 	//TODO сейчас отображаются записи только из одного дневника
+	//TODO вынести id дневника
 	calendar_grid("SELECT id, create_date, title, scrambler\n" +
-			"  FROM rec$record WHERE diary_id = 0 ORDER BY create_date DESC;"),
+			"  FROM rec$record WHERE diary_id = 1 ORDER BY create_date DESC;"),
 
 	view_records("SELECT record_id,order_num,page_content,create_date, title, scrambler FROM rec$record rec\n" +
 			"INNER JOIN  rec$recordpage rp ON rec.id = rp.record_id\n" +

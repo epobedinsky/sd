@@ -41,6 +41,13 @@ CREATE TABLE rec$diary
       ON UPDATE NO ACTION ON DELETE SET NULL
 );
 
+INSERT INTO rec$diary
+(id,
+diary_name)
+VALUES
+(0,
+'default');
+
 -- DROP TABLE rec$record
 CREATE TABLE rec$record
 (

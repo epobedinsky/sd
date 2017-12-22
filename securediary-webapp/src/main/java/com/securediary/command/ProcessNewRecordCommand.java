@@ -15,6 +15,7 @@ import org.ogai.view.NullView;
 import org.ogai.view.View;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -82,7 +83,7 @@ public class ProcessNewRecordCommand extends GoMainPageCommand {
 	private List<String> readFile() throws IOException {
 		File file = new File(SRC_FILE_PATH);
 		InputStream is = Files.newInputStream(file.toPath());
-		InputStreamReader psr = new InputStreamReader(is);
+		InputStreamReader psr = new InputStreamReader(is, Charset.forName("UTF-8"));
 		BufferedReader br = new BufferedReader(psr);
 
 		String nextLine;
